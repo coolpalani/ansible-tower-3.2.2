@@ -1,0 +1,66 @@
+#!/bin/bash
+
+
+/usr/bin/ansible-tower-service start
+
+
+sleep 5
+
+echo checking tower initial config...
+if [ -f /firstboot.flg ]; then
+	echo this is the first boot of this container.
+
+	echo checking ansible certs
+	if [ ! -f /certs/ansible ]; then
+		echo no ansible cert found - this must be a fresh deployment.
+		echo generating cert....
+		ssh-keygen -f /certs/ansible -t rsa -N ''
+	fi
+
+    echo adding ssh config.
+	echo "Host node* 
+	    HostName %h 
+	    IdentityFile /certs/ansible
+	    StrictHostKeyChecking no" >> ~/.ssh/config
+
+	echo checking initial config playbook
+	if [ "$TOWER_INIT_SCM_URL" == "not_set" ]; then
+		echo No initial config playbook was supplied. Tower will be as default.
+	else
+		git clone $TOWER_INIT_SCM_URL /tmp/initial_tower_config
+		ansible-playbook -i "localhost," -c local /tmp/initial_tower_config/playbook.yml &&\
+		echo done.
+	fi
+
+	rm /firstboot.flg
+fi
+
+if [ -f /userstart ]; then
+	echo "Running user start script"
+	source /userstart
+fi
+
+
+tail -f \
+/var/log/postgresql/postgresql-9.4-main.log \
+/var/log/nginx/access.log \
+/var/log/nginx/error.log \
+/var/log/tower/tower_rbac_migrations.log \
+/var/log/tower/fact_receiver.log \
+/var/log/tower/tower_system_tracking_migrations.log \
+/var/log/tower/callback_receiver.log \
+/var/log/tower/task_system.log \
+/var/log/tower/tower.log \
+/var/log/memcached.log \
+/var/log/supervisor/supervisord.log \
+/var/log/supervisor/awx-uwsgi.log \
+/var/log/supervisor/awx-daphne.log \
+/var/log/supervisor/awx-celeryd.log \
+/var/log/supervisor/awx-channels-worker.log \
+/var/log/supervisor/awx-celeryd-beat.log \
+/var/log/supervisor/awx-fact-cache-receiver.log \
+/var/log/supervisor/awx-callback-receiver.log \
+/var/log/supervisor/failure-event-handler.stderr.log \
+| 
+    awk '/^==> / {a=substr($0, 5, length-8); next}
+                 {print a":"$0}'
