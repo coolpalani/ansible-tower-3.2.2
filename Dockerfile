@@ -2,7 +2,7 @@
 
 FROM ubuntu:16.04
 
-MAINTAINER george@automationlogic.com
+MAINTAINER Palani
 
 ENV TOWER_VERSION=3.2.1
 ENV PACKAGENAME=ansible-tower-setup-${TOWER_VERSION}

@@ -4,27 +4,24 @@
 
 ### 1. Build or pull the image
 
-```docker build -t dayglo/ansibletower .```
+```docker build -t coolpalani/ansibletower .```
 
 or 
 
-```docker pull dayglo/ansibletower ```
+```docker pull coolpalani/ansibletower ```
 
 ### 2. Get a license
 
-Go here and get a licence file.
-
+Reachout RedHat team to get a licence file.
 http://www.ansible.com/license
-
-Save it into license.txt somewhere.
 
 ### 3. Run the image
 
 ```
 docker run -it \
 	-p 80:80 -p 443:443 \
-	-v /wherever/you/put/your/license/file/license.txt:/etc/tower/license \
+	-v /pathofthedirectory/license.txt:/etc/tower/license \
 	--name tower \
 	--privileged \
-	dayglo/ansibletower
+	coolpalani/ansibletower
 ```
